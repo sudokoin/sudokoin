@@ -129,7 +129,7 @@ var testInstance = function(sdkInstance) {
 
   var receipt = eth.getTransactionReceipt(txAddr);
   assert(receipt.blockNumber, "tx not confirmed")
-  assert(receipt.gasUsed == 238943, "used gas changed")
+  assert(receipt.gasUsed == 191222, "used gas changed")
   console.log(receipt.gasUsed, "gas used for claiming board");
   assert(
     sdkInstance.claimedBoards(vbCompressed),
