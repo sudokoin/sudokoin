@@ -17,7 +17,7 @@ contract Sudokoin {
   event Burn(address indexed _from, uint _value);
   event Transfer(address indexed _from, address indexed _to, uint _value);
 
-  function claimBoard(uint[81] _b) {
+  function claimBoard(uint[81] _b) returns (bool success) {
     require(validateBoard(_b));
     uint cb = compressBoard(_b);
     if (!claimedBoards[cb]) {
@@ -25,7 +25,9 @@ contract Sudokoin {
       balanceOf[msg.sender] += 81;
       inCirculation += 81;
       BoardClaimed(cb, msg.sender);
+      return true;
     }
+    return false;
   }
 
   function approve(address _spender, uint _value) returns (bool success) {
