@@ -1,215 +1,327 @@
-console.log("check testResults for further insights! (after testing is done)");
-var testResults = {}
+var testResults = {};
 
-var testInstance = function(sdkInstance) {
-  var testAccount = personal.newAccount("devPassword2");
-  personal.unlockAccount(testAccount, "devPassword2");
+function test(){
 
-  testResults["instance"] = sdkInstance;
-  testResults["errors"] = [];
-  testResults["events"] = [];
+  // define test helpers
+  var
+    assert = function(exp, msg) { if (!exp) { console.log("!!! " + msg); } },
+    bn = function(num) { return new BigNumber(num); },
+    log = function(obj) { console.log(JSON.stringify(obj)); },
+    sleep = function(blocks) { admin.sleepBlocks(blocks); },
+    errors = [],
+    events = [],
+    password = "test_password",
+    accountA = personal.newAccount(password),
+    accountB = personal.newAccount(password),
+    accountC = personal.newAccount(password),
+    totalSupply = bn("6670903752021072936960").mul(81),
+    providedGas = 300000,
+    validBoard = [
+      1,2,3,4,5,6,7,8,9,
+      4,5,6,7,8,9,1,2,3,
+      7,8,9,1,2,3,4,5,6,
+      2,3,4,5,6,7,8,9,1,
+      5,6,7,8,9,1,2,3,4,
+      8,9,1,2,3,4,5,6,7,
+      3,4,5,6,7,8,9,1,2,
+      6,7,8,9,1,2,3,4,5,
+      9,1,2,3,4,5,6,7,8
+    ],
+    vbCompressed = bn("1234567845678912789123452345678956789123891234563456789167891234"),
+    validBoard2 = [
+      9,8,7,6,5,4,3,2,1,
+      6,5,4,3,2,1,9,8,7,
+      3,2,1,9,8,7,6,5,4,
+      8,7,6,5,4,3,2,1,9,
+      5,4,3,2,1,9,8,7,6,
+      2,1,9,8,7,6,5,4,3,
+      7,6,5,4,3,2,1,9,8,
+      4,3,2,1,9,8,7,6,5,
+      1,9,8,7,6,5,4,3,2
+    ],
+    vb2Compressed = bn("9876543265432198321987658765432154321987219876547654321943219876"),
+    invalidBoard = [
+      2,2,3,4,5,6,7,8,9,
+      4,5,6,7,8,9,1,2,3,
+      7,8,9,1,2,3,4,5,6,
+      2,3,4,5,6,7,8,9,1,
+      5,6,7,8,9,1,2,3,4,
+      8,9,1,2,3,4,5,6,7,
+      3,4,5,6,7,8,9,1,2,
+      6,7,8,9,1,2,3,4,5,
+      9,1,2,3,4,5,6,7,8
+    ],
+    invalidBoard2 = [
+      1,2,3,4,5,6,7,8,9,
+      4,5,6,7,8,9,1,2,3,
+      7,8,9,1,2,3,4,5,6,
+      2,3,4,5,6,7,8,9,1,
+      5,6,7,8,0,1,2,3,4,
+      8,9,1,2,3,4,5,6,7,
+      3,4,5,6,7,8,9,1,2,
+      6,7,8,9,1,2,3,4,5,
+      9,1,2,3,4,5,6,7,8
+    ],
+    invalidBoard3 = [
+      1,2,3,4,5,6,7,8,9,
+      4,5,6,7,8,9,1,2,3,
+      7,8,9,1,2,3,4,5,6,
+      2,3,4,5,6,7,8,9,1,
+      5,6,7,8,9,1,2,3,4,
+      8,9,1,2,3,4,5,6,7,
+      3,4,5,6,7,8,10,1,2,
+      6,7,8,9,1,2,3,4,5,
+      9,1,2,3,4,5,6,7,8
+    ],
+    invalidBoard4 = [
+      1,2,3,4,5,6,7,8,9,
+      4,5,6,7,8,9,1,2,3,
+      7,8,9,1,2,3,4,5,6,
+      2,3,4,5,6,7,8,9,1,
+      5,6,7,8,9,1,2,3,4,
+      8,9,1,2,3,4,5,6,7,
+      3,4,5,6,7,8,10,1,2,
+      6,7,8,9,1,2,3,4,9,
+      9,1,2,3,4,5,6,7,8
+    ],
+    invalidBoard5 = [
+      1,2,3,4,5,6,7,8,9,
+      4,5,6,7,8,9,1,2,3,
+      7,8,9,1,2,3,4,5,6,
+      2,3,4,5,6,7,8,9,1,
+      5,6,7,8,9,1,2,3,4,
+      8,9,1,2,3,4,5,6,7,
+      3,4,5,6,7,8,9,1,2
+    ];
 
-  testResults["watcher"] = sdkInstance.allEvents(
-    function(err, ev) {
-      if(err){
-        testResults["errors"].push(err);
-        return;
-      }
-      testResults["events"].push(ev);
-    }
-  );
+  // define tests
+  var instanceTests = function(instance) {
 
-  var totalSupply = bn("6670903752021072936960").mul(81);
-  var maxGas = 300000;
+    /*
 
-  var validBoard = [
-    1,2,3,4,5,6,7,8,9,
-    4,5,6,7,8,9,1,2,3,
-    7,8,9,1,2,3,4,5,6,
-    2,3,4,5,6,7,8,9,1,
-    5,6,7,8,9,1,2,3,4,
-    8,9,1,2,3,4,5,6,7,
-    3,4,5,6,7,8,9,1,2,
-    6,7,8,9,1,2,3,4,5,
-    9,1,2,3,4,5,6,7,8
-  ];
-  var vbCompressed = bn("1234567845678912789123452345678956789123891234563456789167891234");
+      board validation
 
-  var validBoard2 = [
-    9,8,7,6,5,4,3,2,1,
-    6,5,4,3,2,1,9,8,7,
-    3,2,1,9,8,7,6,5,4,
-    8,7,6,5,4,3,2,1,9,
-    5,4,3,2,1,9,8,7,6,
-    2,1,9,8,7,6,5,4,3,
-    7,6,5,4,3,2,1,9,8,
-    4,3,2,1,9,8,7,6,5,
-    1,9,8,7,6,5,4,3,2
-  ];
-  var vb2Compressed = bn("9876543265432198321987658765432154321987219876547654321943219876");
+    */
+    console.log("testing board validation");
+    assert(instance.validateBoard(validBoard), "does not validate valid board");
+    assert(instance.validateBoard(validBoard2), "does not validate valid board 2");
+    assert(!instance.validateBoard(invalidBoard), "validated invalid board");
+    assert(!instance.validateBoard(invalidBoard2), "validated invalid board 2");
+    assert(!instance.validateBoard(invalidBoard3), "validated invalid board 3");
+    assert(!instance.validateBoard(invalidBoard4), "validated invalid board 4");
+    assert(!instance.validateBoard(invalidBoard5), "validated invalid board 5");
 
-  var invalidBoard = [
-    2,2,3,4,5,6,7,8,9,
-    4,5,6,7,8,9,1,2,3,
-    7,8,9,1,2,3,4,5,6,
-    2,3,4,5,6,7,8,9,1,
-    5,6,7,8,9,1,2,3,4,
-    8,9,1,2,3,4,5,6,7,
-    3,4,5,6,7,8,9,1,2,
-    6,7,8,9,1,2,3,4,5,
-    9,1,2,3,4,5,6,7,8
-  ];
+    /*
 
-  var invalidBoard2 = [
-    1,2,3,4,5,6,7,8,9,
-    4,5,6,7,8,9,1,2,3,
-    7,8,9,1,2,3,4,5,6,
-    2,3,4,5,6,7,8,9,1,
-    5,6,7,8,0,1,2,3,4,
-    8,9,1,2,3,4,5,6,7,
-    3,4,5,6,7,8,9,1,2,
-    6,7,8,9,1,2,3,4,5,
-    9,1,2,3,4,5,6,7,8
-  ];
+      board compression
 
-  var invalidBoard3 = [
-    1,2,3,4,5,6,7,8,9,
-    4,5,6,7,8,9,1,2,3,
-    7,8,9,1,2,3,4,5,6,
-    2,3,4,5,6,7,8,9,1,
-    5,6,7,8,9,1,2,3,4,
-    8,9,1,2,3,4,5,6,7,
-    3,4,5,6,7,8,10,1,2,
-    6,7,8,9,1,2,3,4,5,
-    9,1,2,3,4,5,6,7,8
-  ];
+    */
+    console.log("testing board compression");
+    assert(vbCompressed.eq(instance.compressBoard(validBoard)), "failed compressing board");
+    assert(vb2Compressed.eq(instance.compressBoard(validBoard2)), "failed compressing board 2");
 
-  var invalidBoard4 = [
-    1,2,3,4,5,6,7,8,9,
-    4,5,6,7,8,9,1,2,3,
-    7,8,9,1,2,3,4,5,6,
-    2,3,4,5,6,7,8,9,1,
-    5,6,7,8,9,1,2,3,4,
-    8,9,1,2,3,4,5,6,7,
-    3,4,5,6,7,8,10,1,2,
-    6,7,8,9,1,2,3,4,9,
-    9,1,2,3,4,5,6,7,8
-  ];
+    /*
 
-  var invalidBoard5 = [
-    1,2,3,4,5,6,7,8,9,
-    4,5,6,7,8,9,1,2,3,
-    7,8,9,1,2,3,4,5,6,
-    2,3,4,5,6,7,8,9,1,
-    5,6,7,8,9,1,2,3,4,
-    8,9,1,2,3,4,5,6,7,
-    3,4,5,6,7,8,9,1,2
-  ];
+      claiming boards
 
-  console.log("testing");
+    */
+    console.log("testing claiming boards");
+    var
+      txClaim = instance.claimBoard.sendTransaction(validBoard, {from: accountA, gas: providedGas}),
+      txClaim2 = instance.claimBoard.sendTransaction(validBoard2, {from: accountA, gas: providedGas});
 
-  assert(sdkInstance.validateBoard(validBoard), "does not validate valid board");
-  assert(sdkInstance.validateBoard(validBoard2), "does not validate valid board 2");
-  assert(!sdkInstance.validateBoard(invalidBoard), "validated invalid board");
-  assert(!sdkInstance.validateBoard(invalidBoard2), "validated invalid board 2");
-  assert(!sdkInstance.validateBoard(invalidBoard3), "validated invalid board 3");
-  assert(!sdkInstance.validateBoard(invalidBoard4), "validated invalid board 4");
-  assert(!sdkInstance.validateBoard(invalidBoard5), "validated invalid board 5");
+    sleep(2);
 
-  assert(vbCompressed.eq(sdkInstance.compressBoard(validBoard)), "compression error");
-  assert(vb2Compressed.eq(sdkInstance.compressBoard(validBoard2)), "compression error 2");
+    // already claimed, so this should fail
+    var
+      txClaim3 = instance.claimBoard.sendTransaction(validBoard2, {from: accountB, gas: providedGas});
 
-  var txAddr = sdkInstance.claimBoard.sendTransaction(validBoard, {from: eth.accounts[0], gas: maxGas});
+    sleep(2);
 
-  admin.sleepBlocks(2);
+    var
+      rcClaim = eth.getTransactionReceipt(txClaim),
+      rcClaim2 = eth.getTransactionReceipt(txClaim2),
+      rcClaim3 = eth.getTransactionReceipt(txClaim3);
 
-  var txAddr2 = sdkInstance.claimBoard.sendTransaction(validBoard, {from: eth.accounts[0], gas: maxGas});
+    assert(rcClaim.blockNumber, "claim not processed");
+    assert(rcClaim2.blockNumber, "claim 2 not processed");
+    assert(rcClaim3.blockNumber, "claim 3 not processed");
 
-  admin.sleepBlocks(2);
+    assert(instance.claimedBoards(vbCompressed), "board not claimed");
+    assert(instance.claimedBoards(vb2Compressed), "second board not claimed");
 
-  var receipt = eth.getTransactionReceipt(txAddr);
-  assert(receipt.blockNumber, "tx not confirmed");
-  assert(receipt.gasUsed == 191385, "used gas changed to " + receipt.gasUsed);
-  assert(
-    sdkInstance.claimedBoards(vbCompressed),
-    "board not claimed"
-  );
-  assert(sdkInstance.balanceOf(eth.accounts[0]) == 81, "balance not updated");
-  assert(totalSupply.eq(sdkInstance.totalSupply()), "supply should not change");
-  assert(bn("81").eq(sdkInstance.inCirculation()), "circulating amount should change");
+    assert(rcClaim.gasUsed == 191385, "used gas changed to " + rcClaim.gasUsed);
+    assert(rcClaim2.gasUsed == 161385, "used gas for second claim differs " + rcClaim2.gasUsed);
+    assert(rcClaim3.gasUsed != 161385, "gas usage should differ from successful claim " + rcClaim3.gasUsed);
 
-  var receipt2 = eth.getTransactionReceipt(txAddr2);
-  assert(receipt2.blockNumber, "tx confirmed wrongfully");
+    assert(instance.balanceOf(accountA) == 162, "tokens not activated");
+    assert(instance.balanceOf(accountB) == 0, "tokens activated wrongfully");
 
-  var txAddr3 = sdkInstance.transfer.sendTransaction(testAccount, 82, {from: eth.accounts[0], gas: maxGas});
+    assert(totalSupply.eq(instance.totalSupply()), "supply should not change");
+    assert(bn("162").eq(instance.inCirculation()), "circulating amount should change");
 
-  admin.sleepBlocks(2);
+    /*
 
-  var receipt3 = eth.getTransactionReceipt(txAddr3);
-  assert(receipt3.gasUsed == maxGas, "should burn all gas");
+      transferring tokens
 
-  var txAddr4 = sdkInstance.transfer.sendTransaction(testAccount, 3, {from: eth.accounts[0], gas: maxGas});
+    */
+    console.log("testing transferring tokens");
+    var
+      txTransfer = instance.transfer.sendTransaction(accountB, 22, {from: accountA, gas: providedGas}),
+      txTransfer2 = instance.transfer.sendTransaction(accountB, 10, {from: accountC, gas: providedGas});
 
-  admin.sleepBlocks(2);
+    sleep(2);
 
-  var receipt4 = eth.getTransactionReceipt(txAddr4);
-  assert(receipt4.gasUsed < maxGas, "should not burn gas");
-  assert(sdkInstance.balanceOf(eth.accounts[0]) == 78, "balance not updated 2");
-  assert(sdkInstance.balanceOf(testAccount) == 3, "balance not updated 3");
+    var
+      rcTransfer = eth.getTransactionReceipt(txTransfer),
+      rcTransfer2 = eth.getTransactionReceipt(txTransfer2);
 
-  var txAddr5 = sdkInstance.burn.sendTransaction(81, {from: eth.accounts[0], gas: maxGas});
+    assert(instance.balanceOf(accountA) == 140, "tokens not tranfered");
+    assert(instance.balanceOf(accountB) == 22, "tokens transfered wrongfully");
 
-  admin.sleepBlocks(2);
+    assert(rcTransfer.gasUsed != providedGas, "legal transfer should not burn all gas");
+    assert(rcTransfer2.gasUsed == providedGas, "illegal transfer should burn all gas");
 
-  var receipt5 = eth.getTransactionReceipt(txAddr5);
-  assert(receipt5.gasUsed == maxGas, "should burn all gas 2");
-  assert(totalSupply.eq(sdkInstance.totalSupply()), "supply should not change 2");
-  assert(bn("81").eq(sdkInstance.inCirculation()), "circulating amount should not change");
+    assert(totalSupply.eq(instance.totalSupply()), "supply should still not change");
+    assert(bn("162").eq(instance.inCirculation()), "circulating amount should not change");
 
-  var txAddr6 = sdkInstance.burn.sendTransaction(3, {from: testAccount, gas: maxGas});
+    /*
 
-  admin.sleepBlocks(2);
+      burning tokens
 
-  var receipt6 = eth.getTransactionReceipt(txAddr6);
-  assert(receipt6.gasUsed < maxGas, "should not burn gas 2");
-  assert(totalSupply.sub(3).eq(sdkInstance.totalSupply()), "supply should change by burned sdk");
-  assert(bn("78").eq(sdkInstance.inCirculation()), "circulating amount should change 2");
+    */
+    console.log("testing burning tokens");
 
-  // assert(testResults.events[0].event == "BoardClaimed", "wrong event");
-  // assert(testResults.events[1].event == "Transfer", "wrong event 2");
-  // assert(testResults.events[2].event == "Burn", "wrong event 3");
-  // assert(testResults.events.length == 3, "wrong event count");
+    var
+      txBurn = instance.burn.sendTransaction(40, {from: accountA, gas: providedGas}),
+      txBurn2 = instance.burn.sendTransaction(40, {from: accountB, gas: providedGas});
 
-  assert(false, "done testing");
-}
+    sleep(2);
 
-var bn = function(num) {
-  return new BigNumber(num);
-}
+    var
+      rcBurn = eth.getTransactionReceipt(txBurn),
+      rcBurn2 = eth.getTransactionReceipt(txBurn2);
 
-var log = function(obj) {
-  console.log(JSON.stringify(obj));
-}
+    assert(instance.balanceOf(accountA) == 100, "tokens not burned");
+    assert(instance.balanceOf(accountB) == 22, "tokens burned wrongfully");
 
-var assert = function(exp, msg) {
-  if (!exp) { console.log("!!! " + msg); }
-}
+    assert(rcBurn.gasUsed != providedGas, "legal burn should not burn all gas");
+    assert(rcBurn2.gasUsed == providedGas, "illegal burn should burn all gas");
 
-var testAll = function() {
-  console.log("unlocking account");
-  personal.unlockAccount(eth.accounts[0], "test_password");
+    assert(totalSupply.sub(40).eq(instance.totalSupply()), "supply should change");
+    assert(bn("122").eq(instance.inCirculation()), "circulating amount should change again");
 
-  console.log("loading contract");
+    /*
+
+      setting allowance
+
+    */
+    console.log("testing setting allowance");
+
+    var
+      txApprove = instance.approve.sendTransaction(accountB, 30, {from: accountA, gas: providedGas});
+
+    sleep(2);
+
+    var
+      allowance = instance.allowance(accountA, accountB);
+
+    assert(bn("30").eq(allowance), "allowance was wrongfully set to " + allowance);
+
+    /*
+
+      transferring via allowance
+
+    */
+    console.log("testing transferring via allowance");
+
+    var
+      txTransferFrom = instance.transferFrom.sendTransaction(accountA, accountC, 11, {from: accountB, gas: providedGas}),
+      txTransferFrom2 = instance.transferFrom.sendTransaction(accountB, accountC, 12, {from: accountA, gas: providedGas});
+
+    sleep(2);
+
+    var
+      rcTransferFrom = eth.getTransactionReceipt(txTransferFrom),
+      rcTransferFrom2 = eth.getTransactionReceipt(txTransferFrom2);
+
+    assert(instance.balanceOf(accountA) == 89, "tokens not transferred via allowance");
+    assert(instance.balanceOf(accountB) == 22, "tokens transferred wrongfully via allowance");
+    assert(instance.balanceOf(accountC) == 11, "tokens transferred wrongfully via allowance again");
+
+    var
+      allowanceUpdated = instance.allowance(accountA, accountB);
+
+    assert(bn("19").eq(allowanceUpdated), "allowance has not been updated");
+
+    /*
+
+      burning via allowance
+
+    */
+    console.log("testing burning via allowance");
+
+    var
+      txBurnFrom = instance.burnFrom.sendTransaction(accountA, 9, {from: accountB, gas: providedGas}),
+      txBurnFrom2 = instance.burnFrom.sendTransaction(accountB, 8, {from: accountA, gas: providedGas});
+
+    sleep(2);
+
+    var
+      rcBurnFrom = eth.getTransactionReceipt(txBurnFrom),
+      rcBurnFrom2 = eth.getTransactionReceipt(txBurnFrom2);
+
+    assert(instance.balanceOf(accountA) == 80, "tokens not burned via allowance");
+    assert(instance.balanceOf(accountB) == 22, "tokens burned wrongfully via allowance");
+    assert(instance.balanceOf(accountC) == 11, "tokens burned wrongfully via allowance again");
+
+    var
+      allowanceUpdated = instance.allowance(accountA, accountB);
+
+    assert(bn("10").eq(allowanceUpdated), "allowance has not been updated");
+
+    assert(totalSupply.sub(49).eq(instance.totalSupply()), "supply should change again");
+    assert(bn("113").eq(instance.inCirculation()), "circulating amount should change once again");
+  }
+
+  // initialize
+  personal.unlockAccount(eth.accounts[0], password);
+  personal.unlockAccount(accountA, password);
+  personal.unlockAccount(accountB, password);
+  personal.unlockAccount(accountC, password);
+  eth.sendTransaction({from:eth.accounts[0], to:accountA, value: web3.toWei(1, "ether")});
+  eth.sendTransaction({from:eth.accounts[0], to:accountB, value: web3.toWei(1, "ether")});
+  eth.sendTransaction({from:eth.accounts[0], to:accountC, value: web3.toWei(1, "ether")});
+
   loadScript("sudokoin.js");
-  var sdkContract = eth.contract(JSON.parse(sdkCompiled.contracts["sudokoin.sol:Sudokoin"].abi));
+  var sdkABI = JSON.parse(sdkCompiled.contracts["sudokoin.sol:Sudokoin"].abi);
+  var sdkContract = eth.contract(sdkABI);
   var sdkInstance = sdkContract.new({ from: eth.accounts[0], data: "0x" + sdkCompiled.contracts["sudokoin.sol:Sudokoin"].bin, gas: 4700000},
     function (e, contract) {
       if (typeof contract.address !== 'undefined') {
-           console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-           testInstance(sdkInstance);
+        // watch events
+        testResults["watcher"] = sdkInstance.allEvents(
+          function(err, ev) {
+            if(err){
+              errors.push(err);
+              return;
+            }
+            events.push(ev);
+          }
+        );
+        console.log('testing started');
+        testResults["errors"] = errors;
+        testResults["events"] = events;
+        testResults["abi"] = sdkABI;
+        instanceTests(sdkInstance);
+        console.log('testing done');
       }
     }
   );
 }
 
-testAll();
+try {
+  test();
+} catch(e) {
+  console.log(e);
+}

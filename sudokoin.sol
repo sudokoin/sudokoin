@@ -74,6 +74,7 @@ contract Sudokoin {
       require(_value <= balanceOf[_from]);
       require(_value <= allowance[_from][msg.sender]);
       balanceOf[_from] -= _value;
+      allowance[_from][msg.sender] -= _value;
       totalSupply -= _value;
       inCirculation -= _value;
       Burn(_from, _value);
