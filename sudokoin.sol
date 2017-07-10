@@ -61,12 +61,13 @@ contract Sudokoin {
       return true;
   }
 
-  function burn(uint _value) {
+  function burn(uint _value) returns (bool success) {
       require(_value <= balanceOf[msg.sender]);
       balanceOf[msg.sender] -= _value;
       totalSupply -= _value;
       inCirculation -= _value;
       Burn(msg.sender, _value);
+      return true;
   }
 
   function burnFrom(address _from, uint _value) returns (bool success) {
