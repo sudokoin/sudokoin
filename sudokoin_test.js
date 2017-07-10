@@ -1,4 +1,4 @@
-console.log("check testResults for further insights! (after testing is done)")
+console.log("check testResults for further insights! (after testing is done)");
 var testResults = {}
 
 var testInstance = function(sdkInstance) {
@@ -128,9 +128,8 @@ var testInstance = function(sdkInstance) {
   admin.sleepBlocks(2);
 
   var receipt = eth.getTransactionReceipt(txAddr);
-  assert(receipt.blockNumber, "tx not confirmed")
-  assert(receipt.gasUsed == 191222, "used gas changed")
-  console.log(receipt.gasUsed, "gas used for claiming board");
+  assert(receipt.blockNumber, "tx not confirmed");
+  assert(receipt.gasUsed == 191310, "used gas changed to " + receipt.gasUsed);
   assert(
     sdkInstance.claimedBoards(vbCompressed),
     "board not claimed"
@@ -140,7 +139,7 @@ var testInstance = function(sdkInstance) {
   assert(bn("81").eq(sdkInstance.inCirculation()), "circulating amount should change");
 
   var receipt2 = eth.getTransactionReceipt(txAddr2);
-  assert(receipt2.blockNumber, "tx confirmed wrongfully")
+  assert(receipt2.blockNumber, "tx confirmed wrongfully");
 
   var txAddr3 = sdkInstance.transfer.sendTransaction(testAccount, 82, {from: eth.accounts[0], gas: maxGas});
 
@@ -201,7 +200,7 @@ var testAll = function() {
   personal.unlockAccount(eth.accounts[0], "test_password");
 
   console.log("loading contract");
-  loadScript("sudokoin.js")
+  loadScript("sudokoin.js");
   var sdkContract = eth.contract(JSON.parse(sdkCompiled.contracts["sudokoin.sol:Sudokoin"].abi));
   var sdkInstance = sdkContract.new({ from: eth.accounts[0], data: "0x" + sdkCompiled.contracts["sudokoin.sol:Sudokoin"].bin, gas: 4700000},
     function (e, contract) {

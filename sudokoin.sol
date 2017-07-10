@@ -4,18 +4,22 @@ contract Sudokoin {
   uint public totalSupply = 6670903752021072936960 * 81;
   uint public inCirculation = 0;
 
+  string public constant name = "Sudokoin";
+  string public constant symbol = "SDK";
+  uint8 public constant decimals = 0;
+
+  mapping (address => mapping (address => uint)) public allowance;
   mapping (address => uint) public balanceOf;
   mapping (uint => bool) public claimedBoards;
 
-  event BoardClaimed(uint board, address by);
-  event Burn(address indexed from, uint value);
-  event Transfer(address indexed from, address indexed to, uint value);
+  event Approval(address indexed _owner, address indexed _spender, uint _value);
+  event BoardClaimed(uint _board, address _by);
+  event Burn(address indexed _from, uint _value);
+  event Transfer(address indexed _from, address indexed _to, uint _value);
 
-  function claimBoard(uint[81] b) {
-    // 4 + 81 * 32
-    // if(msg.data.length != 2596) throw;
-    if(!validateBoard(b)) throw;
-    uint cb = compressBoard(b);
+  function claimBoard(uint[81] _b) {
+    require(validateBoard(_b));
+    uint cb = compressBoard(_b);
     if (!claimedBoards[cb]) {
       claimedBoards[cb] = true;
       balanceOf[msg.sender] += 81;
@@ -24,102 +28,130 @@ contract Sudokoin {
     }
   }
 
-  function transfer(address to, uint value) {
-      // 4 + 32 + 32
-      // if(msg.data.length != 68) throw;
-      if (to == 0x0) throw; // use burn!
-      if (balanceOf[msg.sender] < value) throw;
-      if (balanceOf[to] + value < balanceOf[to]) throw;
-      balanceOf[msg.sender] -= value;
-      balanceOf[to] += value;
-      Transfer(msg.sender, to, value);
+  function approve(address _spender, uint _value) returns (bool success) {
+      require(msg.data.length >= 68);
+      allowance[msg.sender][_spender] = _value;
+      Approval(msg.sender, _spender, _value);
+      return true;
   }
 
-  function burn(uint value) {
-      // 4 + 32
-      // if(msg.data.length != 36) throw;
-      if (balanceOf[msg.sender] < value) throw;
-      balanceOf[msg.sender] -= value;
-      totalSupply -= value;
-      inCirculation -= value;
-      Burn(msg.sender, value);
+  function transfer(address _to, uint _value) returns (bool success) {
+      require(msg.data.length >= 68);
+      require(_to != 0x0); // use burn!
+      require(_value <= balanceOf[msg.sender]);
+      require(_value + balanceOf[_to] >= balanceOf[_to]);
+      balanceOf[msg.sender] -= _value;
+      balanceOf[_to] += _value;
+      Transfer(msg.sender, _to, _value);
+      return true;
+  }
+
+  function transferFrom(address _from, address _to, uint _value) returns (bool success) {
+      require(msg.data.length >= 100);
+      require(_to != 0x0); // use burnFrom!
+      require(_value <= balanceOf[_from]);
+      require(_value <= allowance[_from][msg.sender]);
+      require(_value + balanceOf[_to] >= balanceOf[_to]);
+      balanceOf[_from] -= _value;
+      balanceOf[_to] += _value;
+      allowance[_from][msg.sender] -= _value;
+      Transfer(_from, _to, _value);
+      return true;
+  }
+
+  function burn(uint _value) {
+      require(_value <= balanceOf[msg.sender]);
+      balanceOf[msg.sender] -= _value;
+      totalSupply -= _value;
+      inCirculation -= _value;
+      Burn(msg.sender, _value);
+  }
+
+  function burnFrom(address _from, uint _value) returns (bool success) {
+      require(_value <= balanceOf[_from]);
+      require(_value <= allowance[_from][msg.sender]);
+      balanceOf[_from] -= _value;
+      totalSupply -= _value;
+      inCirculation -= _value;
+      Burn(_from, _value);
+      return true;
   }
 
   // compressBoard removes last col and last row and joins digits into one number.
-  function compressBoard(uint[81] b) constant returns (uint) {
+  function compressBoard(uint[81] _b) constant returns (uint) {
     uint cb = 0;
     uint mul = 1000000000000000000000000000000000000000000000000000000000000000;
     for (uint i = 0; i < 72; i++) {
       if (i % 9 == 8) {
         continue;
       }
-      cb = cb + mul * b[i];
+      cb = cb + mul * _b[i];
       mul = mul / 10;
     }
     return cb;
   }
 
-  function validateBoard(uint[81] b) constant returns (bool) {
+  function validateBoard(uint[81] _b) constant returns (bool) {
     return
       // rows
-      validateSet( b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8]) &&
-      validateSet( b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17]) &&
-      validateSet(b[18],b[19],b[20],b[21],b[22],b[23],b[24],b[25],b[26]) &&
-      validateSet(b[27],b[28],b[29],b[30],b[31],b[32],b[33],b[34],b[35]) &&
-      validateSet(b[36],b[37],b[38],b[39],b[40],b[41],b[42],b[43],b[44]) &&
-      validateSet(b[45],b[46],b[47],b[48],b[49],b[50],b[51],b[52],b[53]) &&
-      validateSet(b[54],b[55],b[56],b[57],b[58],b[59],b[60],b[61],b[62]) &&
-      validateSet(b[63],b[64],b[65],b[66],b[67],b[68],b[69],b[70],b[71]) &&
-      validateSet(b[72],b[73],b[74],b[75],b[76],b[77],b[78],b[79],b[80]) &&
+      validateSet( _b[0], _b[1], _b[2], _b[3], _b[4], _b[5], _b[6], _b[7], _b[8]) &&
+      validateSet( _b[9],_b[10],_b[11],_b[12],_b[13],_b[14],_b[15],_b[16],_b[17]) &&
+      validateSet(_b[18],_b[19],_b[20],_b[21],_b[22],_b[23],_b[24],_b[25],_b[26]) &&
+      validateSet(_b[27],_b[28],_b[29],_b[30],_b[31],_b[32],_b[33],_b[34],_b[35]) &&
+      validateSet(_b[36],_b[37],_b[38],_b[39],_b[40],_b[41],_b[42],_b[43],_b[44]) &&
+      validateSet(_b[45],_b[46],_b[47],_b[48],_b[49],_b[50],_b[51],_b[52],_b[53]) &&
+      validateSet(_b[54],_b[55],_b[56],_b[57],_b[58],_b[59],_b[60],_b[61],_b[62]) &&
+      validateSet(_b[63],_b[64],_b[65],_b[66],_b[67],_b[68],_b[69],_b[70],_b[71]) &&
+      validateSet(_b[72],_b[73],_b[74],_b[75],_b[76],_b[77],_b[78],_b[79],_b[80]) &&
 
       // cols
-      validateSet(b[0], b[9],b[18],b[27],b[36],b[45],b[54],b[63],b[72]) &&
-      validateSet(b[1],b[10],b[19],b[28],b[37],b[46],b[55],b[64],b[73]) &&
-      validateSet(b[2],b[11],b[20],b[29],b[38],b[47],b[56],b[65],b[74]) &&
-      validateSet(b[3],b[12],b[21],b[30],b[39],b[48],b[57],b[66],b[75]) &&
-      validateSet(b[4],b[13],b[22],b[31],b[40],b[49],b[58],b[67],b[76]) &&
-      validateSet(b[5],b[14],b[23],b[32],b[41],b[50],b[59],b[68],b[77]) &&
-      validateSet(b[6],b[15],b[24],b[33],b[42],b[51],b[60],b[69],b[78]) &&
-      validateSet(b[7],b[16],b[25],b[34],b[43],b[52],b[61],b[70],b[79]) &&
-      validateSet(b[8],b[17],b[26],b[35],b[44],b[53],b[62],b[71],b[80]) &&
+      validateSet(_b[0], _b[9],_b[18],_b[27],_b[36],_b[45],_b[54],_b[63],_b[72]) &&
+      validateSet(_b[1],_b[10],_b[19],_b[28],_b[37],_b[46],_b[55],_b[64],_b[73]) &&
+      validateSet(_b[2],_b[11],_b[20],_b[29],_b[38],_b[47],_b[56],_b[65],_b[74]) &&
+      validateSet(_b[3],_b[12],_b[21],_b[30],_b[39],_b[48],_b[57],_b[66],_b[75]) &&
+      validateSet(_b[4],_b[13],_b[22],_b[31],_b[40],_b[49],_b[58],_b[67],_b[76]) &&
+      validateSet(_b[5],_b[14],_b[23],_b[32],_b[41],_b[50],_b[59],_b[68],_b[77]) &&
+      validateSet(_b[6],_b[15],_b[24],_b[33],_b[42],_b[51],_b[60],_b[69],_b[78]) &&
+      validateSet(_b[7],_b[16],_b[25],_b[34],_b[43],_b[52],_b[61],_b[70],_b[79]) &&
+      validateSet(_b[8],_b[17],_b[26],_b[35],_b[44],_b[53],_b[62],_b[71],_b[80]) &&
 
       // blocks
-      validateSet( b[0], b[1], b[2], b[9],b[10],b[11],b[18],b[19],b[20]) &&
-      validateSet(b[27],b[28],b[29],b[36],b[37],b[38],b[45],b[46],b[47]) &&
-      validateSet(b[54],b[55],b[56],b[63],b[64],b[65],b[72],b[73],b[74]) &&
-      validateSet( b[3], b[4], b[5],b[12],b[13],b[14],b[21],b[22],b[23]) &&
-      validateSet(b[30],b[31],b[32],b[39],b[40],b[41],b[48],b[49],b[50]) &&
-      validateSet(b[57],b[58],b[59],b[66],b[67],b[68],b[75],b[76],b[77]) &&
-      validateSet( b[6], b[7], b[8],b[15],b[16],b[17],b[24],b[25],b[26]) &&
-      validateSet(b[33],b[34],b[35],b[42],b[43],b[44],b[51],b[52],b[53]) &&
-      validateSet(b[60],b[61],b[62],b[69],b[70],b[71],b[78],b[79],b[80]);
+      validateSet( _b[0], _b[1], _b[2], _b[9],_b[10],_b[11],_b[18],_b[19],_b[20]) &&
+      validateSet(_b[27],_b[28],_b[29],_b[36],_b[37],_b[38],_b[45],_b[46],_b[47]) &&
+      validateSet(_b[54],_b[55],_b[56],_b[63],_b[64],_b[65],_b[72],_b[73],_b[74]) &&
+      validateSet( _b[3], _b[4], _b[5],_b[12],_b[13],_b[14],_b[21],_b[22],_b[23]) &&
+      validateSet(_b[30],_b[31],_b[32],_b[39],_b[40],_b[41],_b[48],_b[49],_b[50]) &&
+      validateSet(_b[57],_b[58],_b[59],_b[66],_b[67],_b[68],_b[75],_b[76],_b[77]) &&
+      validateSet( _b[6], _b[7], _b[8],_b[15],_b[16],_b[17],_b[24],_b[25],_b[26]) &&
+      validateSet(_b[33],_b[34],_b[35],_b[42],_b[43],_b[44],_b[51],_b[52],_b[53]) &&
+      validateSet(_b[60],_b[61],_b[62],_b[69],_b[70],_b[71],_b[78],_b[79],_b[80]);
   }
 
-  function validateSet(uint v1, uint v2, uint v3, uint v4, uint v5, uint v6, uint v7, uint v8, uint v9) private returns (bool) {
-    uint set = addToSet(0, v1);
-    if (setIncludes(set, v2)) { return false; }
-    set = addToSet(set, v2);
-    if (setIncludes(set, v3)) { return false; }
-    set = addToSet(set, v3);
-    if (setIncludes(set, v4)) { return false; }
-    set = addToSet(set, v4);
-    if (setIncludes(set, v5)) { return false; }
-    set = addToSet(set, v5);
-    if (setIncludes(set, v6)) { return false; }
-    set = addToSet(set, v6);
-    if (setIncludes(set, v7)) { return false; }
-    set = addToSet(set, v7);
-    if (setIncludes(set, v8)) { return false; }
-    set = addToSet(set, v8);
-    if (setIncludes(set, v9)) { return false; }
+  function validateSet(uint _v1, uint _v2, uint _v3, uint _v4, uint _v5, uint _v6, uint _v7, uint _v8, uint _v9) private returns (bool) {
+    uint set = addToSet(0, _v1);
+    if (setIncludes(set, _v2)) { return false; }
+    set = addToSet(set, _v2);
+    if (setIncludes(set, _v3)) { return false; }
+    set = addToSet(set, _v3);
+    if (setIncludes(set, _v4)) { return false; }
+    set = addToSet(set, _v4);
+    if (setIncludes(set, _v5)) { return false; }
+    set = addToSet(set, _v5);
+    if (setIncludes(set, _v6)) { return false; }
+    set = addToSet(set, _v6);
+    if (setIncludes(set, _v7)) { return false; }
+    set = addToSet(set, _v7);
+    if (setIncludes(set, _v8)) { return false; }
+    set = addToSet(set, _v8);
+    if (setIncludes(set, _v9)) { return false; }
     return true;
   }
 
-  function setIncludes(uint set, uint val) private returns (bool) {
-    return val == 0 || val > 9 || set & (1 << val) != 0;
+  function setIncludes(uint _set, uint _number) private returns (bool success) {
+    return _number == 0 || _number > 9 || _set & (1 << _number) != 0;
   }
 
-  function addToSet(uint set, uint val) private returns (uint) {
-    return set | (1 << val);
+  function addToSet(uint _set, uint _number) private returns (uint set) {
+    return _set | (1 << _number);
   }
 }
