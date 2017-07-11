@@ -284,6 +284,33 @@ function test(){
     assert(bn("113").eq(instance.inCirculation()), "circulating amount should change once again");
   }
 
+  var abiTests = function(abi) {
+
+    /*
+
+      ERC20 compliance
+
+    */
+    console.log("testing ERC20 compliance");
+    loadScript("ERC20_spec.js");
+    abiStrings = [];
+    for(var i=0; i < abi.length; i++) {
+      abiStrings.push(JSON.stringify(abi[i]));
+    }
+
+    for(var i=0; i < erc20.length; i++) {
+      var ERC20str = JSON.stringify(erc20[i]);
+      var found = false;
+      for(var j=0; j < abiStrings.length; j++) {
+        if(ERC20str === abiStrings[j]) {
+          found = true;
+          break;
+        }
+      }
+      assert(found, "ERC20 member missing: " + ERC20str);
+    }
+  }
+
   // initialize
   personal.unlockAccount(eth.accounts[0], password);
   personal.unlockAccount(accountA, password);
@@ -313,6 +340,7 @@ function test(){
         testResults["errors"] = errors;
         testResults["events"] = events;
         testResults["abi"] = sdkABI;
+        abiTests(sdkABI);
         instanceTests(sdkInstance);
         console.log('testing done');
       }
