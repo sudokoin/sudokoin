@@ -2,6 +2,14 @@
 
 An easy to understand, proof of (little) work Ethereum token
 
+## BETA
+
+Sudokoin is running at `0x3a0caa94b2c41c54b518979888162acc90d5ab47`. You can use it at your own peril right now. It should be fully ERC20 compliant.
+
+Please feel free to create issues or contact us at [github@sudokoin.com](mailto:github@sudokoin.com)
+
+As soon as we feel confident enough, we will configure `sudokoin.eth` to route to it.
+
 ## About
 
 The idea behind Sudokoin is simple: claim a solved sudoku board and get 81 Sudokoin.
