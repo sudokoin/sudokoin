@@ -19,7 +19,7 @@ var erc20 = [{
   inputs: [],
   name: "totalSupply",
   outputs: [{
-    name: "",
+    name: "totalSupply",
     type: "uint256"
   }],
   payable: false,
@@ -46,12 +46,12 @@ var erc20 = [{
 }, {
   constant: true,
   inputs: [{
-    name: "",
+    name: "_owner",
     type: "address"
   }],
   name: "balanceOf",
   outputs: [{
-    name: "",
+    name: "balance",
     type: "uint256"
   }],
   payable: false,
@@ -75,15 +75,15 @@ var erc20 = [{
 }, {
   constant: true,
   inputs: [{
-    name: "",
+    name: "_owner",
     type: "address"
   }, {
-    name: "",
+    name: "_spender",
     type: "address"
   }],
   name: "allowance",
   outputs: [{
-    name: "",
+    name: "remaining",
     type: "uint256"
   }],
   payable: false,

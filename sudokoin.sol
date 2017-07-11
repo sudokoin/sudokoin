@@ -1,15 +1,15 @@
 pragma solidity ^0.4.11;
 
 contract Sudokoin {
-  uint public totalSupply = 6670903752021072936960 * 81;
+  uint supply = 6670903752021072936960 * 81;
   uint public inCirculation = 0;
 
   string public constant name = "Sudokoin";
   string public constant symbol = "SDK";
   uint8 public constant decimals = 0;
 
-  mapping (address => mapping (address => uint)) public allowance;
-  mapping (address => uint) public balanceOf;
+  mapping (address => mapping (address => uint)) allowances;
+  mapping (address => uint) balances;
   mapping (uint => bool) public claimedBoards;
 
   event Approval(address indexed _owner, address indexed _spender, uint _value);
@@ -17,12 +17,24 @@ contract Sudokoin {
   event Burn(address indexed _from, uint _value);
   event Transfer(address indexed _from, address indexed _to, uint _value);
 
+  function allowance(address _owner, address _spender) constant returns (uint remaining) {
+    remaining = allowances[_owner][_spender];
+  }
+
+  function balanceOf(address _owner) constant returns (uint balance) {
+    balance = balances[_owner];
+  }
+
+  function totalSupply() constant returns (uint totalSupply) {
+    totalSupply = supply;
+  }
+
   function claimBoard(uint[81] _b) returns (bool success) {
     require(validateBoard(_b));
     uint cb = compressBoard(_b);
     if (!claimedBoards[cb]) {
       claimedBoards[cb] = true;
-      balanceOf[msg.sender] += 81;
+      balances[msg.sender] += 81;
       inCirculation += 81;
       BoardClaimed(cb, msg.sender);
       return true;
@@ -32,7 +44,7 @@ contract Sudokoin {
 
   function approve(address _spender, uint _value) returns (bool success) {
       require(msg.data.length >= 68);
-      allowance[msg.sender][_spender] = _value;
+      allowances[msg.sender][_spender] = _value;
       Approval(msg.sender, _spender, _value);
       return true;
   }
@@ -40,10 +52,10 @@ contract Sudokoin {
   function transfer(address _to, uint _value) returns (bool success) {
       require(msg.data.length >= 68);
       require(_to != 0x0); // use burn!
-      require(_value <= balanceOf[msg.sender]);
-      require(_value + balanceOf[_to] >= balanceOf[_to]);
-      balanceOf[msg.sender] -= _value;
-      balanceOf[_to] += _value;
+      require(_value <= balances[msg.sender]);
+      require(_value + balances[_to] >= balances[_to]);
+      balances[msg.sender] -= _value;
+      balances[_to] += _value;
       Transfer(msg.sender, _to, _value);
       return true;
   }
@@ -51,31 +63,31 @@ contract Sudokoin {
   function transferFrom(address _from, address _to, uint _value) returns (bool success) {
       require(msg.data.length >= 100);
       require(_to != 0x0); // use burnFrom!
-      require(_value <= balanceOf[_from]);
-      require(_value <= allowance[_from][msg.sender]);
-      require(_value + balanceOf[_to] >= balanceOf[_to]);
-      balanceOf[_from] -= _value;
-      balanceOf[_to] += _value;
-      allowance[_from][msg.sender] -= _value;
+      require(_value <= balances[_from]);
+      require(_value <= allowances[_from][msg.sender]);
+      require(_value + balances[_to] >= balances[_to]);
+      balances[_from] -= _value;
+      balances[_to] += _value;
+      allowances[_from][msg.sender] -= _value;
       Transfer(_from, _to, _value);
       return true;
   }
 
   function burn(uint _value) returns (bool success) {
-      require(_value <= balanceOf[msg.sender]);
-      balanceOf[msg.sender] -= _value;
-      totalSupply -= _value;
+      require(_value <= balances[msg.sender]);
+      balances[msg.sender] -= _value;
+      supply -= _value;
       inCirculation -= _value;
       Burn(msg.sender, _value);
       return true;
   }
 
   function burnFrom(address _from, uint _value) returns (bool success) {
-      require(_value <= balanceOf[_from]);
-      require(_value <= allowance[_from][msg.sender]);
-      balanceOf[_from] -= _value;
-      allowance[_from][msg.sender] -= _value;
-      totalSupply -= _value;
+      require(_value <= balances[_from]);
+      require(_value <= allowances[_from][msg.sender]);
+      balances[_from] -= _value;
+      allowances[_from][msg.sender] -= _value;
+      supply -= _value;
       inCirculation -= _value;
       Burn(_from, _value);
       return true;
