@@ -1,7 +1,7 @@
 pragma solidity ^0.4.13;
 
 contract Sudokoin {
-  uint supply = 190120736224393831645184;
+  uint supply = 203462379904501283815424;
   uint public boards = 0; // max 6670903752021072936960
 
   string public constant name = "Sudokoin";
@@ -171,62 +171,66 @@ contract Sudokoin {
 
   // returns reward for the next submitted board, so reward first and then increase boards!
   function nextReward(uint _bNo) constant returns (uint) {
-    if (_bNo < 185154) { return 36028797018963968; } // tier 1
-    if (_bNo < 370309) { return 18014398509481984; } // tier 2
-    if (_bNo < 740619) { return 9007199254740992; } // tier 3
-    if (_bNo < 1481238) { return 4503599627370496; } // tier 4
-    if (_bNo < 2962476) { return 2251799813685248; } // tier 5
-    if (_bNo < 5924952) { return 1125899906842624; } // tier 6
-    if (_bNo < 11849905) { return 562949953421312; } // tier 7
-    if (_bNo < 23699811) { return 281474976710656; } // tier 8
-    if (_bNo < 47399622) { return 140737488355328; } // tier 9
-    if (_bNo < 94799244) { return 70368744177664; } // tier 10
-    if (_bNo < 189598488) { return 35184372088832; } // tier 11
-    if (_bNo < 379196976) { return 17592186044416; } // tier 12
-    if (_bNo < 758393952) { return 8796093022208; } // tier 13
-    if (_bNo < 1516787904) { return 4398046511104; } // tier 14
-    if (_bNo < 3033575809) { return 2199023255552; } // tier 15
-    if (_bNo < 6067151618) { return 1099511627776; } // tier 16
-    if (_bNo < 12134303237) { return 549755813888; } // tier 17
-    if (_bNo < 24268606474) { return 274877906944; } // tier 18
-    if (_bNo < 48537212948) { return 137438953472; } // tier 19
-    if (_bNo < 97074425896) { return 68719476736; } // tier 20
-    if (_bNo < 194148851792) { return 34359738368; } // tier 21
-    if (_bNo < 388297703584) { return 17179869184; } // tier 22
-    if (_bNo < 776595407168) { return 8589934592; } // tier 23
-    if (_bNo < 1553190814336) { return 4294967296; } // tier 24
-    if (_bNo < 3106381628672) { return 2147483648; } // tier 25
-    if (_bNo < 6212763257344) { return 1073741824; } // tier 26
-    if (_bNo < 12425526514688) { return 536870912; } // tier 27
-    if (_bNo < 24851053029377) { return 268435456; } // tier 28
-    if (_bNo < 49702106058754) { return 134217728; } // tier 29
-    if (_bNo < 99404212117509) { return 67108864; } // tier 30
-    if (_bNo < 198808424235018) { return 33554432; } // tier 31
-    if (_bNo < 397616848470036) { return 16777216; } // tier 32
-    if (_bNo < 795233696940073) { return 8388608; } // tier 33
-    if (_bNo < 1590467393880146) { return 4194304; } // tier 34
-    if (_bNo < 3180934787760292) { return 2097152; } // tier 35
-    if (_bNo < 6361869575520585) { return 1048576; } // tier 36
-    if (_bNo < 12723739151041170) { return 524288; } // tier 37
-    if (_bNo < 25447478302082340) { return 262144; } // tier 38
-    if (_bNo < 50894956604164680) { return 131072; } // tier 39
-    if (_bNo < 101789913208329360) { return 65536; } // tier 40
-    if (_bNo < 203579826416658720) { return 32768; } // tier 41
-    if (_bNo < 407159652833317440) { return 16384; } // tier 42
-    if (_bNo < 814319305666634880) { return 8192; } // tier 43
-    if (_bNo < 1628638611333269760) { return 4096; } // tier 44
-    if (_bNo < 3257277222666539520) { return 2048; } // tier 45
-    if (_bNo < 6514554445333079040) { return 1024; } // tier 46
-    if (_bNo < 13029108890666158080) { return 512; } // tier 47
-    if (_bNo < 26058217781332316160) { return 256; } // tier 48
-    if (_bNo < 52116435562664632320) { return 128; } // tier 49
-    if (_bNo < 104232871125329264640) { return 64; } // tier 50
-    if (_bNo < 208465742250658529280) { return 32; } // tier 51
-    if (_bNo < 416931484501317058560) { return 16; } // tier 52
-    if (_bNo < 833862969002634117120) { return 8; } // tier 53
-    if (_bNo < 1667725938005268234240) { return 4; } // tier 54
-    if (_bNo < 3335451876010536468480) { return 2; } // tier 55
-    if (_bNo < 6670903752021072936960) { return 1; } // tier 56
+    if (_bNo < 11572) { return 576460752303423488; } // tier 1
+    if (_bNo < 23144) { return 288230376151711744; } // tier 2
+    if (_bNo < 46288) { return 144115188075855872; } // tier 3
+    if (_bNo < 92577) { return 72057594037927936; } // tier 4
+    if (_bNo < 185154) { return 36028797018963968; } // tier 5
+    if (_bNo < 370309) { return 18014398509481984; } // tier 6
+    if (_bNo < 740619) { return 9007199254740992; } // tier 7
+    if (_bNo < 1481238) { return 4503599627370496; } // tier 8
+    if (_bNo < 2962476) { return 2251799813685248; } // tier 9
+    if (_bNo < 5924952) { return 1125899906842624; } // tier 10
+    if (_bNo < 11849905) { return 562949953421312; } // tier 11
+    if (_bNo < 23699811) { return 281474976710656; } // tier 12
+    if (_bNo < 47399622) { return 140737488355328; } // tier 13
+    if (_bNo < 94799244) { return 70368744177664; } // tier 14
+    if (_bNo < 189598488) { return 35184372088832; } // tier 15
+    if (_bNo < 379196976) { return 17592186044416; } // tier 16
+    if (_bNo < 758393952) { return 8796093022208; } // tier 17
+    if (_bNo < 1516787904) { return 4398046511104; } // tier 18
+    if (_bNo < 3033575809) { return 2199023255552; } // tier 19
+    if (_bNo < 6067151618) { return 1099511627776; } // tier 20
+    if (_bNo < 12134303237) { return 549755813888; } // tier 21
+    if (_bNo < 24268606474) { return 274877906944; } // tier 22
+    if (_bNo < 48537212948) { return 137438953472; } // tier 23
+    if (_bNo < 97074425896) { return 68719476736; } // tier 24
+    if (_bNo < 194148851792) { return 34359738368; } // tier 25
+    if (_bNo < 388297703584) { return 17179869184; } // tier 26
+    if (_bNo < 776595407168) { return 8589934592; } // tier 27
+    if (_bNo < 1553190814336) { return 4294967296; } // tier 28
+    if (_bNo < 3106381628672) { return 2147483648; } // tier 29
+    if (_bNo < 6212763257344) { return 1073741824; } // tier 30
+    if (_bNo < 12425526514688) { return 536870912; } // tier 31
+    if (_bNo < 24851053029377) { return 268435456; } // tier 32
+    if (_bNo < 49702106058754) { return 134217728; } // tier 33
+    if (_bNo < 99404212117509) { return 67108864; } // tier 34
+    if (_bNo < 198808424235018) { return 33554432; } // tier 35
+    if (_bNo < 397616848470036) { return 16777216; } // tier 36
+    if (_bNo < 795233696940073) { return 8388608; } // tier 37
+    if (_bNo < 1590467393880146) { return 4194304; } // tier 38
+    if (_bNo < 3180934787760292) { return 2097152; } // tier 39
+    if (_bNo < 6361869575520585) { return 1048576; } // tier 40
+    if (_bNo < 12723739151041170) { return 524288; } // tier 41
+    if (_bNo < 25447478302082340) { return 262144; } // tier 42
+    if (_bNo < 50894956604164680) { return 131072; } // tier 43
+    if (_bNo < 101789913208329360) { return 65536; } // tier 44
+    if (_bNo < 203579826416658720) { return 32768; } // tier 45
+    if (_bNo < 407159652833317440) { return 16384; } // tier 46
+    if (_bNo < 814319305666634880) { return 8192; } // tier 47
+    if (_bNo < 1628638611333269760) { return 4096; } // tier 48
+    if (_bNo < 3257277222666539520) { return 2048; } // tier 49
+    if (_bNo < 6514554445333079040) { return 1024; } // tier 50
+    if (_bNo < 13029108890666158080) { return 512; } // tier 51
+    if (_bNo < 26058217781332316160) { return 256; } // tier 52
+    if (_bNo < 52116435562664632320) { return 128; } // tier 53
+    if (_bNo < 104232871125329264640) { return 64; } // tier 54
+    if (_bNo < 208465742250658529280) { return 32; } // tier 55
+    if (_bNo < 416931484501317058560) { return 16; } // tier 56
+    if (_bNo < 833862969002634117120) { return 8; } // tier 57
+    if (_bNo < 1667725938005268234240) { return 4; } // tier 58
+    if (_bNo < 3335451876010536468480) { return 2; } // tier 59
+    if (_bNo < 6670903752021072936960) { return 1; } // tier 60
     return 0;
   }
 }

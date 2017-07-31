@@ -17,8 +17,8 @@ function test(){
     balanceA = bn(0),
     balanceB = bn(0),
     balanceC = bn(0),
-    totalSupply = bn("190120736224393831645184"),
-    tier1Reward = bn("36028797018963968"),
+    totalSupply = bn("203462379904501283815424"),
+    tier1Reward = bn("576460752303423488"),
     amountTooLarge = totalSupply.add(1),
     providedGas = 300000,
     validBoard = [
@@ -132,10 +132,12 @@ function test(){
     */
     console.log("testing tier reward");
 
-    assert(instance.nextReward("185153").eq("36028797018963968"), "wrong tier 1 reward");
-    assert(instance.nextReward("185154").eq("18014398509481984"), "wrong tier 2 reward");
-    assert(instance.nextReward("6670903752021072936959").eq("1"), "wrong tier 56 reward");
-    assert(instance.nextReward("6670903752021072936960").eq("0"), "wrong tier 57 reward");
+    assert(instance.nextReward("11571").eq("576460752303423488"), "wrong tier 1 reward");
+    assert(instance.nextReward("11572").eq("288230376151711744"), "wrong tier 2 reward");
+    assert(instance.nextReward("185153").eq("36028797018963968"), "wrong tier 5 reward");
+    assert(instance.nextReward("185154").eq("18014398509481984"), "wrong tier 6 reward");
+    assert(instance.nextReward("6670903752021072936959").eq("1"), "wrong tier 60 reward");
+    assert(instance.nextReward("6670903752021072936960").eq("0"), "wrong tier 61 reward");
 
     /*
 

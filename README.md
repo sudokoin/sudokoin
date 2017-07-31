@@ -6,7 +6,7 @@ Sudokoin is an easy to understand, proof of (little) work Ethereum token.
 
 The simple idea behind it is: claim a solved sudoku board and get Sudokoin.
 
-Every board can be claimed only once. Sudokoin are rewarded in 56 tiers. The amount of Sudokoin received per claimed sudoku is halved every tier, ending with 1 Sudokoin per sudoku in the last tier.
+Every board can be claimed only once. Sudokoin are rewarded in 60 tiers. The amount of Sudokoin received per claimed sudoku is halved every tier, ending with 1 Sudokoin per sudoku in the last tier.
 
 Sudokoin is implemented as an [ERC20][1] compliant Ethereum contract and programmed using Solidity.
 
