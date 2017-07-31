@@ -14,7 +14,12 @@ function test(){
     accountA = personal.newAccount(password),
     accountB = personal.newAccount(password),
     accountC = personal.newAccount(password),
-    totalSupply = bn("6670903752021072936960").mul(81),
+    balanceA = bn(0),
+    balanceB = bn(0),
+    balanceC = bn(0),
+    totalSupply = bn("190120736224393831645184"),
+    tier1Reward = bn("36028797018963968"),
+    amountTooLarge = totalSupply.add(1),
     providedGas = 300000,
     validBoard = [
       1,2,3,4,5,6,7,8,9,
@@ -122,6 +127,18 @@ function test(){
 
     /*
 
+      tier reward
+
+    */
+    console.log("testing tier reward");
+
+    assert(instance.nextReward("185153").eq("36028797018963968"), "wrong tier 1 reward");
+    assert(instance.nextReward("185154").eq("18014398509481984"), "wrong tier 2 reward");
+    assert(instance.nextReward("6670903752021072936959").eq("1"), "wrong tier 56 reward");
+    assert(instance.nextReward("6670903752021072936960").eq("0"), "wrong tier 57 reward");
+
+    /*
+
       claiming boards
 
     */
@@ -129,6 +146,8 @@ function test(){
     var
       txClaim = instance.claimBoard.sendTransaction(validBoard, {from: accountA, gas: providedGas}),
       txClaim2 = instance.claimBoard.sendTransaction(validBoard2, {from: accountA, gas: providedGas});
+
+    balanceA = balanceA.add(tier1Reward).mul(2);
 
     sleep(2);
 
@@ -150,15 +169,15 @@ function test(){
     assert(instance.claimedBoards(vbCompressed), "board not claimed");
     assert(instance.claimedBoards(vb2Compressed), "second board not claimed");
 
-    assert(rcClaim.gasUsed == 191385, "used gas changed to " + rcClaim.gasUsed);
-    assert(rcClaim2.gasUsed == 161385, "used gas for second claim differs " + rcClaim2.gasUsed);
-    assert(rcClaim3.gasUsed != 161385, "gas usage should differ from successful claim " + rcClaim3.gasUsed);
+    assert(rcClaim.gasUsed == 191939, "used gas changed to " + rcClaim.gasUsed);
+    assert(rcClaim2.gasUsed == 161939, "used gas for second claim differs " + rcClaim2.gasUsed);
+    assert(rcClaim3.gasUsed != 161939, "gas usage should differ from successful claim " + rcClaim3.gasUsed);
 
-    assert(instance.balanceOf(accountA) == 162, "tokens not activated");
-    assert(instance.balanceOf(accountB) == 0, "tokens activated wrongfully");
+    assert(balanceA.eq(instance.balanceOf(accountA)), "tokens not rewarded");
+    assert(balanceB.eq(instance.balanceOf(accountB)), "tokens rewarded wrongfully");
 
     assert(totalSupply.eq(instance.totalSupply()), "supply should not change");
-    assert(bn("162").eq(instance.inCirculation()), "circulating amount should change");
+    assert(instance.boards() == 2, "board count should change");
 
     /*
 
@@ -169,7 +188,10 @@ function test(){
     var
       txTransfer = instance.transfer.sendTransaction(accountB, 22, {from: accountA, gas: providedGas}),
       txTransfer2 = instance.transfer.sendTransaction(accountB, 10, {from: accountC, gas: providedGas})
-      txTransfer3 = instance.transfer.sendTransaction(accountB, 200, {from: accountA, gas: providedGas});
+      txTransfer3 = instance.transfer.sendTransaction(accountB, amountTooLarge, {from: accountA, gas: providedGas});
+
+    balanceA = balanceA.sub(22);
+    balanceB = balanceB.add(22);
 
     sleep(2);
 
@@ -178,15 +200,14 @@ function test(){
       rcTransfer2 = eth.getTransactionReceipt(txTransfer2),
       rcTransfer3 = eth.getTransactionReceipt(txTransfer3);
 
-    assert(instance.balanceOf(accountA) == 140, "tokens not tranfered");
-    assert(instance.balanceOf(accountB) == 22, "tokens transfered wrongfully");
+    assert(balanceA.eq(instance.balanceOf(accountA)), "tokens not tranferred");
+    assert(balanceB.eq(instance.balanceOf(accountB)), "tokens transferred wrongfully");
 
     assert(rcTransfer.gasUsed != providedGas, "legal transfer should not burn all gas");
     assert(rcTransfer2.gasUsed == providedGas, "illegal transfer should burn all gas");
     assert(rcTransfer3.gasUsed == providedGas, "other illegal transfer should burn all gas");
 
     assert(totalSupply.eq(instance.totalSupply()), "supply should still not change");
-    assert(bn("162").eq(instance.inCirculation()), "circulating amount should not change");
 
     /*
 
@@ -198,7 +219,9 @@ function test(){
     var
       txBurn = instance.burn.sendTransaction(40, {from: accountA, gas: providedGas}),
       txBurn2 = instance.burn.sendTransaction(40, {from: accountB, gas: providedGas}),
-      txBurn3 = instance.burn.sendTransaction(400, {from: accountB, gas: providedGas});
+      txBurn3 = instance.burn.sendTransaction(amountTooLarge, {from: accountB, gas: providedGas});
+
+    balanceA = balanceA.sub(40);
 
     sleep(2);
 
@@ -207,15 +230,14 @@ function test(){
       rcBurn2 = eth.getTransactionReceipt(txBurn2),
       rcBurn3 = eth.getTransactionReceipt(txBurn3);
 
-    assert(instance.balanceOf(accountA) == 100, "tokens not burned");
-    assert(instance.balanceOf(accountB) == 22, "tokens burned wrongfully");
+    assert(balanceA.eq(instance.balanceOf(accountA)), "tokens not burned");
+    assert(balanceB.eq(instance.balanceOf(accountB)), "tokens burned wrongfully");
 
     assert(rcBurn.gasUsed != providedGas, "legal burn should not burn all gas");
     assert(rcBurn2.gasUsed == providedGas, "illegal burn should burn all gas");
     assert(rcBurn3.gasUsed == providedGas, "other illegal burn should burn all gas");
 
     assert(totalSupply.sub(40).eq(instance.totalSupply()), "supply should change");
-    assert(bn("122").eq(instance.inCirculation()), "circulating amount should change again");
 
     /*
 
@@ -244,7 +266,10 @@ function test(){
     var
       txTransferFrom = instance.transferFrom.sendTransaction(accountA, accountC, 11, {from: accountB, gas: providedGas}),
       txTransferFrom2 = instance.transferFrom.sendTransaction(accountB, accountC, 12, {from: accountA, gas: providedGas}),
-      txTransferFrom3 = instance.transferFrom.sendTransaction(accountA, accountC, 1100, {from: accountB, gas: providedGas});
+      txTransferFrom3 = instance.transferFrom.sendTransaction(accountA, accountC, 31, {from: accountB, gas: providedGas});
+
+    balanceA = balanceA.sub(11);
+    balanceC = balanceC.add(11);
 
     sleep(2);
 
@@ -257,9 +282,9 @@ function test(){
     assert(rcTransferFrom2.gasUsed == providedGas, "illegal allowance transfer should burn all gas");
     assert(rcTransferFrom3.gasUsed == providedGas, "other illegal allowance transfer should burn all gas");
 
-    assert(instance.balanceOf(accountA) == 89, "tokens not transferred via allowance");
-    assert(instance.balanceOf(accountB) == 22, "tokens transferred wrongfully via allowance");
-    assert(instance.balanceOf(accountC) == 11, "tokens transferred wrongfully via allowance again");
+    assert(balanceA.eq(instance.balanceOf(accountA)), "tokens not transferred via allowance");
+    assert(balanceB.eq(instance.balanceOf(accountB)), "tokens transferred wrongfully via allowance");
+    assert(balanceC.eq(instance.balanceOf(accountC)), "tokens transferred wrongfully via allowance again");
 
     var
       allowanceUpdated = instance.allowance(accountA, accountB);
@@ -278,6 +303,8 @@ function test(){
       txBurnFrom2 = instance.burnFrom.sendTransaction(accountB, 8, {from: accountA, gas: providedGas}),
       txBurnFrom3 = instance.burnFrom.sendTransaction(accountA, 900, {from: accountB, gas: providedGas});
 
+    balanceA = balanceA.sub(9);
+
     sleep(2);
 
     var
@@ -285,9 +312,9 @@ function test(){
       rcBurnFrom2 = eth.getTransactionReceipt(txBurnFrom2),
       rcBurnFrom3 = eth.getTransactionReceipt(txBurnFrom3);
 
-    assert(instance.balanceOf(accountA) == 80, "tokens not burned via allowance");
-    assert(instance.balanceOf(accountB) == 22, "tokens burned wrongfully via allowance");
-    assert(instance.balanceOf(accountC) == 11, "tokens burned wrongfully via allowance again");
+    assert(balanceA.eq(instance.balanceOf(accountA)), "tokens not burned via allowance");
+    assert(balanceB.eq(instance.balanceOf(accountB)), "tokens burned wrongfully via allowance");
+    assert(balanceC.eq(instance.balanceOf(accountC)), "tokens burned wrongfully via allowance again");
 
     assert(rcBurnFrom.gasUsed != providedGas, "legal allowance burn should not burn all gas");
     assert(rcBurnFrom2.gasUsed == providedGas, "illegal allowance burn should burn all gas");
@@ -299,7 +326,6 @@ function test(){
     assert(bn("10").eq(allowanceUpdated), "allowance has not been updated");
 
     assert(totalSupply.sub(49).eq(instance.totalSupply()), "supply should change again");
-    assert(bn("113").eq(instance.inCirculation()), "circulating amount should change once again");
   }
 
   var abiTests = function(abi) {
@@ -338,6 +364,10 @@ function test(){
   eth.sendTransaction({from:eth.accounts[0], to:accountB, value: web3.toWei(1, "ether")});
   eth.sendTransaction({from:eth.accounts[0], to:accountC, value: web3.toWei(1, "ether")});
 
+  console.log("account A initialized: " + accountA);
+  console.log("account B initialized: " + accountB);
+  console.log("account C initialized: " + accountC);
+
   loadScript("sudokoin.js");
   var sdkABI = JSON.parse(sdkCompiled.contracts["sudokoin.sol:Sudokoin"].abi);
   var sdkContract = eth.contract(sdkABI);
@@ -358,6 +388,7 @@ function test(){
         testResults["errors"] = errors;
         testResults["events"] = events;
         testResults["abi"] = sdkABI;
+        testResults["instance"] = sdkInstance;
         abiTests(sdkABI);
         instanceTests(sdkInstance);
         console.log('testing done');
