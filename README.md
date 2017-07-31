@@ -12,6 +12,14 @@ Sudokoin is implemented as an [ERC20][1] compliant Ethereum contract and program
 
 The creators need to acquire Sudokoin by the same means as everybody else: claiming solved sudokus.
 
+## BETA
+
+An instance of Sudokoin is running at `0x21aec0a028d7adec228595b24439c7eb969edd5f`. You can use it at your own peril right now. It should be fully ERC20 compliant.
+
+Please feel free to create issues or contact us at [github@sudokoin.com](mailto:github@sudokoin.com)
+
+As soon as we feel confident enough, we will configure `sudokoin.eth` to route to it.
+
 ## Setup
 
 ### Compile contract
