@@ -24,29 +24,31 @@ As soon as we feel confident enough, we will configure `sudokoin.eth` to route t
 
 If you just want some stats, take a look at [Etherscan][2].
 
-For read access, you can use [Remix][3]:
+The simplest way to interact with the Sudokoin contract we know so far is by using Google Chrome, Metamask and Remix:
 
-1. Click on the black and white plus icon in the top left.
-2. Copy the contents of [sudokoin.sol][4] from this project into the empty editor.
-3. Click `At Address` (green button at the right).
-4. Provide this address: `0x21aec0a028d7adec228595b24439c7eb969edd5f`.
+1. Install the [Metamask][5] Chrome extension (Firefox support is planned).
+2. Open [Remix][3].
+3. Click on the black and white plus icon in the top left.
+4. Copy the contents of [sudokoin.sol][4] from this project into the empty editor.
+5. Click `At Address` (green button at the right).
+6. Provide this address: `0x21aec0a028d7adec228595b24439c7eb969edd5f`.
 
 Every blue button that should now appear is a read-only method of the contract. Try for example clicking on `boards` and providing the resulting value to `nextReward`!
 
-The red buttons are for transactions that need to be paid for with Ethereum. For this you need an Ethereum account and a wallet, e.g. [Metamask][5] (for Google Chrome only).
+The red buttons are for transactions that need to be paid for with Ethereum. For this, you need to set up Metamask with an Ethereum account containing some Ether.
 
-Please be aware that Sudokoin is still very immature and undergoing continuous testing. If any severe bugs are found, a new version of the contract might be uploaded and old claimed boards might be lost.
+Please be aware that Sudokoin is still immature and undergoing continuous testing. If any severe bugs are found, a new version of the contract might be uploaded and old claimed boards might be lost.
 
-If a wallet is set up and you have a board in the form of `[1,2,3,… ,7,8,9]`, you can try claiming it:
+If Metamask is set up and you have a board in the form of `[1,2,3,… ,7,8,9]`, you can try claiming it:
 
-(At the time of this writing, claiming a board cost [$0.68 / 161939 Gas][6].)
+(At the time of this writing, claiming a board cost around [$0.68 / 161939 Gas][6].)
 
 1. Check if board is correct via `validateBoard`.
 2. Compress board via `compressBoard`.
 3. Provide the compressed result to `claimedBoards` in double quotes.
 4. If the result is false, provide the original array to `claimBoard` and confirm the transaction.
 
-Since Sudokoin is ERC20 compliant, your wallet may offer an option to inspect/trade it.
+There is also a `TOKENS` tab in Metamask where you can add your Sudokoin balance.
 
 ## Setup
 
