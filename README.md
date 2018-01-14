@@ -14,6 +14,10 @@ The creators need to acquire Sudokoin by the same means as everybody else: claim
 
 Please feel free to create issues or contact us at [github@sudokoin.com](mailto:github@sudokoin.com)
 
+## [sudokoin.com][7]
+
+Since Ethereum is pretty expensive right now, we started implementing an alternative sudokoin implementation on top of [the Stellar Network][8]. It is at this time much more centralized, but also much more usable. Check it out under [https://sudokoin.com][7]!
+
 ## ALPHA
 
 An instance of Sudokoin is running at `0x21aec0a028d7adec228595b24439c7eb969edd5f`. You can use it at your own peril right now. It should be fully ERC20 compliant.
@@ -71,3 +75,5 @@ loadScript("sudokoin_test.js");
 [4]: https://raw.githubusercontent.com/sudokoin/sudokoin/69903bdf12d4e04f0b371773f66d627923912db9/sudokoin.sol
 [5]: https://metamask.io/
 [6]: https://etherscan.io/tx/0xa7bd4baf28d1e9ea508b7f3497835ea588f1c4bf6066f651c92cbcd29e82d009
+[7]: https://sudokoin.com
+[8]: https://www.stellar.org
